@@ -1,0 +1,239 @@
+:root{
+    --base-color:#222831;
+    --text-color:#F3EAC7;
+    --secondary-color: #393E46;
+}
+
+.lightmode{
+    --base-color:#F3EAC7;
+    --text-color:#222831;
+}
+
+body{
+    margin: 0;
+    padding: 0;
+    background-color: var(--base-color);
+    color: var(--text-color);
+    font-family: 'Cutive Mono';
+}
+
+a{
+    text-decoration: none;
+}
+
+#theme-switch svg{
+    fill: var(--base-color);
+}
+
+#darkmode {
+  display: none;
+}
+
+.lightmode #darkmode {
+  display: inline;
+}
+
+.lightmode #lightmode {
+  display: none;
+}
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
+}
+
+.header-title {
+    flex: 1;
+    text-align: center;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.title{
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.btn {
+    padding: 0;
+    background-color: var(--text-color);
+    color: var(--base-color);
+    height: 35px;
+    width: 35px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+.btn-d,.btn-e {
+    padding: 0;
+    color: var(--text-color);
+    background-color: var(--base-color);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+#plus{
+    width: 25px; 
+    height: 25px;
+}
+
+.btn:hover {
+    transform: scale(1.15);
+}
+.btn-d:hover{
+    transform: scale(1.15);
+}
+.shake:hover {
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    50% { transform: rotate(10deg); }
+    75% { transform: rotate(-6deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+#book-cards {
+    max-width: 800px; 
+    margin: 0 auto;   
+    padding: 1rem;
+    padding-top: max(30px,3%);
+    padding-bottom: 10px;    
+}
+
+.card {
+    border: 2px solid var(--text-color); 
+    border-radius: 8px;
+    padding: 1rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    margin-bottom: 1rem;
+    background-color: var(--base-color);
+    color: var(--text-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+    position: relative;
+    height: 20vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.title-author h3,
+.title-author p {
+  margin: 0;
+}
+
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0; /* push bottom bar down */
+}
+
+.card:hover {
+    transform: scale(1.05);
+    z-index: 5;
+}
+
+.card::before, .card::after{
+    content: '';
+    background-color: var(--base-color);
+    border: solid 2px var(--text-color);
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    z-index: -1;
+}
+
+.card::after{
+    filter: blur(0.25rem);
+}
+
+.note {
+  height: 4.5em; /* ~3 lines depending on line-height */
+  line-height: 1.5em;
+  overflow: hidden;
+  position: relative;
+}
+
+.note::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2em; /* fade height */
+  background: linear-gradient(to bottom, transparent, var(--base-color));
+}
+
+.card.expanded {
+  height: auto;           /* let it grow naturally */
+  min-height: 25vh;       /* keep a minimum size for short notes */
+}
+
+.card.expanded .note {
+  height: auto;           /* remove the clamp */
+  overflow: visible;
+}
+
+.card.expanded .note::after {
+  display: none;          /* remove fade overlay */
+}
+
+#delete, #edit, .ratingStar{
+    fill: var(--text-color);
+}
+
+.ratingEdit input,
+.noteEdit {
+  border: 1px solid var(--text-color); 
+  border-radius: 4px;
+  color: var(--text-color);
+  background-color: var(--base-color);
+  padding: 0.4rem;
+  transition: all 0.1s ease-in-out; /* smooth everything */
+}
+
+.noteEdit{
+    width: 100%;        /* span full card width like .note */
+    height: 100%;      /* match .note height */
+    line-height: 1.5em;
+    resize: none;       /* disable drag-resize if you want it fixed */
+}
+
+.ratingEdit input:focus,
+.noteEdit:focus {
+  outline: 2px solid var(--text-color);
+}
+.footer {
+    text-align: center; 
+    padding-top: 2.5%;
+}
