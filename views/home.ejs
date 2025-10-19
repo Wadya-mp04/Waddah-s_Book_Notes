@@ -30,70 +30,78 @@
         <% } else {  %>
             <% bookList.forEach(book => { %>
                 <div class="card" id="card<%= book.ISBN %>" onclick="clickSound()">
-                <!-- Top row -->
-                <div class="card-top">
-                    <div class="title-author">
-                    <h2 id="title<%= book.ISBN %>" class="title"><%= book.title %></h2>
-                    <p id="author<%= book.ISBN %>"><%= book.Author %></p>
-                    </div>
-                    <div class="rating" id="rating<%= book.ISBN %>">
-                    <% for (let i = 0; i < book.rating; i++){ %>
-                        <svg class="ratingStar" xmlns="http://www.w3.org/2000/svg" height="24px"
-                        viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
-                        <path d="m233-120 65-281L80-590l288-25 112-265 
-                                112 265 288 25-218 189 65 281-247-149-247 149Z"/>
-                        </svg>
-                    <% } %>
-                    </div>
-                    <div id="ratingEdit<%= book.ISBN %>" class="ratingEdit" hidden>
+                    <!-- Top row -->
+                    <div class="card-top">
+                        <div class="title-author">
+                        <h2 id="title<%= book.ISBN %>" class="title"><%= book.title %></h2>
+                        <p id="author<%= book.ISBN %>"><%= book.Author %></p>
+                        <p id="ISBN<%= book.ISBN %>">ISBN : <%= book.ISBN %></p>
+                        </div>
+
+                        <div class="rating" id="rating<%= book.ISBN %>">
+                        <% for (let i = 0; i < book.rating; i++){ %>
+                            <svg class="ratingStar" xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960" fill="#e3e3e3">
+                            <path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/>
+                            </svg>
+                        <% } %>
+                        </div>
+
+                        <div id="ratingEdit<%= book.ISBN %>" class="ratingEdit" hidden>
                         <input type="text" value="<%= book.rating %>" name="newRating">
+                        </div>
                     </div>
-                </div>
 
-                <!-- Middle -->
-                <p id="note<%= book.ISBN %>" class="note"><%= book.note %></p>
-                <textarea id="noteEdit<%= book.ISBN %>" class="noteEdit" name="updatedNote" hidden><%= book.note %></textarea>
+                    <!-- Middle -->
+                    <p id="note<%= book.ISBN %>" class="note"><%= book.note %></p>
+                    <!-- keep ONE textarea only -->
+                    <textarea id="noteEdit<%= book.ISBN %>" class="noteEdit" name="updatedNote" hidden><%= book.note %></textarea>
 
-                <!-- Bottom row --> 
-                <div class="card-bottom">
-                    <form action="/delete">
-                    <input type="hidden" name="deleteISBN" value="<%= book.ISBN %>">
-                    <button class="btn-d" onclick="{(e) => e.stopPropagation}">
-                        <svg id="delete" class="shake" xmlns="http://www.w3.org/2000/svg"
-                        height="24px" viewBox="0 -960 960 960" width="24px">
-                        <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40
-                                h200v80h-40v520q0 33-23.5 56.5T680-120H280Z"/>
-                        </svg>
-                    </button>
-                    </form>
+                    <!-- Bottom row -->
+                    <div class="card-bottom">
+                        <!-- left: delete -->
+                        <form action="/delete" onsubmit="event.stopPropagation()">
+                        <input type="hidden" name="deleteISBN" value="<%= book.ISBN %>">
+                        <button class="btn-d" type="submit" onclick="event.stopPropagation()">
+                            <svg class="shake" xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960" fill="#e3e3e3">
+                            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Z"/>
+                            </svg>
+                        </button>
+                        </form>
 
-                    <form action="/edit">
-                    <input type="hidden" name="updatedItemISBN" value="<%= book.ISBN %>">
-                    <textarea id="noteEdit<%= book.ISBN %>" type="text" name="updatedNote"
-                            value="<%= book.note %>" hidden ></textarea>
-                    <input id="noteRating<%= book.ISBN %>" type="text" name="updatedRating"
-                            value="<%= book.rating %>" hidden>
-                    <button id="done<%=book.ISBN%>" class="edit" type="submit" hidden>
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" 
-                        viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
-                        <path d="M382-240 154-468l57-57 171 171 
-                                367-367 57 57-424 424Z"/>
-                        </svg>
-                    </button>
-                    </form>
+                        <!-- right: edit / done / cancel live together -->
+                        <div class="actions-right">
+                        <!-- Edit button (shown by default) -->
+                        <button class="btn-e shake edit-toggle" id="edit<%=book.ISBN%>"
+                                onclick="startEdit('<%=book.ISBN%>', event)">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960" fill="#e3e3e3">
+                            <path d="M200-200h57l391-391-57-57-391 391v57Z"/>
+                            </svg>
+                        </button>
 
-                    <button class="btn-e shake" id="edit<%=book.ISBN%>" 
-                            onclick="handler('<%=book.ISBN%>')">
-                    <svg id="edit" xmlns="http://www.w3.org/2000/svg" height="24px"
-                        viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
-                        <path d="M200-200h57l391-391-57-57-391 391v57Z"/>
-                    </svg>
-                    </button>
-                </div>
-                </div>
+                        <!-- Done + Cancel (hidden by default) -->
+                        <form action="/edit" method="post" class="edit-actions" onsubmit="event.stopPropagation()" hidden>
+                            <input type="hidden" name="updatedItemISBN" value="<%= book.ISBN %>">
+                            <input id="updatedRating<%= book.ISBN %>" type="hidden" name="updatedRating" value="<%= book.rating %>">
+                            <input id="upadtedNote<%= book.ISBN %>" type="hidden" name="updatedRating" value="<%= book.note %>">
+                            <button id="cancel<%= book.ISBN %>" class="cancel btn-e" type="button"
+                                    onclick="cancelEdit('<%=book.ISBN%>', event)">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960" fill="#e3e3e3">
+                                <path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56Z"/>
+                            </svg>
+                            </button>
+                            <button id="done<%=book.ISBN%>" class="edit btn-e" type="submit" onclick="event.stopPropagation()">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960" fill="#e3e3e3">
+                                <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
+                            </svg>
+                            </button>
+                        </form>
+                        </div>
+                    </div>
+                    </div>
+
             <% }); %>
         <% } %>
-
+    </div>                
       <%- include('partials/footer.ejs'); -%>
     <script>
         // 1) One AudioContext for the page
@@ -154,11 +162,58 @@
         window.clickSound = () => playClick();
 
         
-        function handler(id) {
-            document.getElementById("note" + id).setAttribute("hidden", true);
-            document.getElementById("rating" + id).setAttribute("hidden", true);
-            document.getElementById("noteEdit" + id).removeAttribute("hidden");
-            document.getElementById("ratingEdit" + id).removeAttribute("hidden");
+          function startEdit(id, event) {
+            event.stopPropagation();
+
+            // elements
+            const card       = document.getElementById('card' + id);
+            const note       = document.getElementById('note' + id);
+            const noteEdit   = document.getElementById('noteEdit' + id);
+            const rating     = document.getElementById('rating' + id);
+            const ratingEdit = document.getElementById('ratingEdit' + id);
+
+            const editBtn    = document.getElementById('edit' + id);
+            const actions    = editBtn.closest('.actions-right').querySelector('.edit-actions');
+
+            // show inputs, hide displays
+            note.hidden       = true;
+            rating.hidden     = true;
+            noteEdit.hidden   = false;
+            ratingEdit.hidden = false;
+
+            // swap buttons
+            editBtn.hidden = true;
+            // for(const child of editBtn)
+            //     {
+            //         child.setAttribue('hidden',true);
+            //     }
+            actions.hidden = false;
+        }
+
+        function cancelEdit(id, event) {
+            event.stopPropagation();
+
+            const note       = document.getElementById('note' + id);
+            const noteEdit   = document.getElementById('noteEdit' + id);
+            const rating     = document.getElementById('rating' + id);
+            const ratingEdit = document.getElementById('ratingEdit' + id);
+
+            const editBtn    = document.getElementById('edit' + id);
+            const actions    = editBtn.closest('.actions-right').querySelector('.edit-actions');
+
+            // hide inputs, show displays
+            note.hidden       = false;
+            rating.hidden     = false;
+            noteEdit.hidden   = true;
+            ratingEdit.hidden = true;
+
+            // swap buttons back
+            actions.hidden = true;
+            editBtn.hidden = false;
+            // for(child of editBtn)                this thing is so annoying broooo
+            //     {
+            //         child.hidden = false;
+            //     }
         }
 
         document.querySelectorAll(".card").forEach(card => {

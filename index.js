@@ -48,6 +48,10 @@ app.get(`/`, async (req,res) =>{
   );
 });
 
+app.post('/edit', async (req,res) =>{
+  console.log(req.body);
+});
+
 app.listen(port, ()=>{
     console.log(`Server running on port: ${port}`);
 });

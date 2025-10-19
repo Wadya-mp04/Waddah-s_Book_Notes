@@ -208,7 +208,7 @@ a{
   display: none;          /* remove fade overlay */
 }
 
-#delete, #edit, .ratingStar{
+#delete, #edit, .ratingStar, .edit, .cancel{
     fill: var(--text-color);
 }
 
@@ -237,3 +237,18 @@ a{
     text-align: center; 
     padding-top: 2.5%;
 }
+
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actions-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Optional: hide/show via a 'editing' class on the card */
+.card .edit-actions[hidden] { display: none !important; }
