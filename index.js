@@ -47,6 +47,10 @@ app.get(`/`, async (req,res) =>{
     }
   );
 });
+app.post('/check',async (req,res) =>{
+  console.log(req.body);
+  res.redirect('/');
+});
 
 app.post('/edit', async (req,res) =>{
   console.log(req.body);

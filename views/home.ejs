@@ -114,11 +114,14 @@
                 <br/>
                 <div class="modal_actions">
                 <input type="submit" class="modal_btn" value="Submit">
+                <input type="hidden" name="action" value="add" id="modalAction">
+                <input type="hidden" name="ISBN" value="" id="modalInISBN">
                 <button class="modal_btn" id="modal-close" type="button">Cancel</button>
                 </div>
             </form>
-
             <p class="modal_message"></p>
+            <p class="bad_message"></p>
+            <p class="good_message"></p>
         </div>
     </div>                
       <%- include('partials/footer.ejs'); -%>
@@ -255,10 +258,13 @@
             });
         });
 
-        const deleteCard = document.querySelector('#book-cards')
-        const message = document.querySelector('.modal_message')
-        const modal = document.querySelector('.modal_container')
-        const closeModal = document.querySelector('#modal-close')
+        const deleteCard = document.querySelector('#book-cards');
+        const message = document.querySelector('.modal_message');
+        const modal = document.querySelector('.modal_container');
+        const closeModal = document.querySelector('#modal-close');
+        const openModal = document.querySelector('#add-button');
+        const action = document.querySelector('#modalAction');
+        const modalISBN = document.querySelector('#modalInISBN');
         deleteCard.addEventListener('click', (e) => {
             // Find the closest delete button (works for svg/path clicks)
             const deleteBtn = e.target.closest('.btn-d');
@@ -279,12 +285,21 @@
                 console.log('Card ID:', card.id);
                 modal.classList.add('show');
                 message.innerHTML = "please fill in credentials to delete the rating for book ISBN: " + card.id.substring(4);
+                action.value = "delete";
+                modalISBN.value = card.id.substring(4);
             }
         });
         closeModal.addEventListener('click', () =>{
             playClick()
             modal.classList.remove('show')
         });
+        openModal.addEventListener('click', () =>{
+            playClick()
+            action.value = "add";
+            modalISBN.value = "";
+            message.textContent = "Please enter credentials to add a book rating.";
+            modal.classList.add('show')
+        })
         // let cards = document.querySelectorAll('card');
         // if(card){
         //     card.addEventListener('click', (e) =>{
