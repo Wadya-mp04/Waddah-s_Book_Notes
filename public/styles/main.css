@@ -83,6 +83,7 @@ a{
     justify-content: center;
     transition: transform 0.3s ease;
     cursor: pointer;
+    fill: var(--text-color);
 }
 
 #plus{
@@ -252,3 +253,96 @@ a{
 
 /* Optional: hide/show via a 'editing' class on the card */
 .card .edit-actions[hidden] { display: none !important; }
+.modal_container{
+  background-color: rgba(0, 0, 0, 0.45);
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal_container.show{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal{
+  width: min(90vw, 520px);
+  padding: 1.8rem;
+  border: 2px solid var(--text-color);
+  border-radius: 12px;
+  background-color: var(--base-color);
+  color: var(--text-color);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255,255,255,0.05);
+  transform: translateY(15px) scale(0.98);
+  transition: transform 0.25s ease;
+}
+
+.modal_container.show .modal{
+  transform: translateY(0) scale(1);
+}
+
+.modal_header{
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  letter-spacing: 0.05em;
+}
+
+/* Message text */
+.modal_message{
+  text-align: center;
+  font-size: 0.95rem;
+  opacity: 0.85;
+  margin-bottom: 1.5rem;
+}
+
+
+
+/* Buttons container (optional but recommended) */
+.modal_actions{
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+.modal_btn{
+  border-radius: 999px;
+  padding: 0.6rem 1.6rem;
+  border: 2px solid var(--text-color);
+  background-color: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal_btn:hover{
+  background-color: var(--text-color);
+  color: var(--base-color);
+  transform: translateY(-1px);
+}
+/* Inputs */
+.inCheckForm input[type="text"],
+.inCheckForm input[type="password"]{
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 0.8rem;
+  border-radius: 6px;
+  border: 1px solid var(--text-color);
+  background-color: var(--base-color);
+  color: var(--text-color);
+  font-family: inherit;
+}
+
+.inCheckForm input[type="text"]:focus,
+.inCheckForm input[type="password"]:focus{
+  outline: 2px solid var(--text-color);
+  outline-offset: 2px;
+}
