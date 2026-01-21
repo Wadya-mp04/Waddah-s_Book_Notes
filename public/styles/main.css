@@ -296,13 +296,18 @@ a{
 }
 
 /* Message text */
-.modal_message{
+.modal_message, .bad_message, .good_message{
   text-align: center;
   font-size: 0.95rem;
   opacity: 0.85;
   margin-bottom: 1.5rem;
 }
-
+.bad_message{
+  color: #800020;
+}
+.good_message{
+  color: #56694a;
+}
 
 
 /* Buttons container (optional but recommended) */

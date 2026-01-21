@@ -265,6 +265,10 @@
         const openModal = document.querySelector('#add-button');
         const action = document.querySelector('#modalAction');
         const modalISBN = document.querySelector('#modalInISBN');
+        const form = document.querySelector('.inCheckForm');
+        const badMessage = document.querySelector('.bad_message');
+        const goodMessage = document.querySelector('.good_message');
+
         deleteCard.addEventListener('click', (e) => {
             // Find the closest delete button (works for svg/path clicks)
             const deleteBtn = e.target.closest('.btn-d');
@@ -298,14 +302,77 @@
             action.value = "add";
             modalISBN.value = "";
             message.textContent = "Please enter credentials to add a book rating.";
+            badMessage.textContent = "";
+            goodMessage.textContent = "";
             modal.classList.add('show')
         })
-        // let cards = document.querySelectorAll('card');
-        // if(card){
-        //     card.addEventListener('click', (e) =>{
 
-        //     })
-        // }
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            message.textContent = '';
+            badMessage.textContent = '';
+            goodMessage.textContent = '';
+
+            const user = document.getElementById('inCheckUser').value.trim();
+            const pass = document.getElementById('inCheckPass').value.trim();
+
+            if(!user || !pass) {
+                badMessage.textContent = 'Please fill in both username and password.';
+                return;
+            }
+
+            try {
+                const res = await fetch('/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user,
+                        password: pass,
+                        action: action.value,
+                        ISBN: modalISBN.value
+                    })
+                });
+
+                const data = await res.json();
+
+                if(!data.success) {
+                    badMessage.textContent = data.message || 'Invalid credentials.';
+                    return;
+                }
+
+                goodMessage.textContent = 'Credentials verified.';
+
+                if(action.value === 'add') {
+                    // Redirect admin page
+                    window.location.href = data.redirect;
+                    return;
+                }
+
+                if(action.value === 'delete') {
+                    const deleteRes = await fetch('/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ISBN: modalISBN.value })
+                    });
+
+                    const deleteData = await deleteRes.json();
+
+                    if(deleteData.success) {
+                        goodMessage.textContent = deleteData.message;
+                        document.getElementById('card' + modalISBN.value)?.remove();
+                    } else {
+                        badMessage.textContent = deleteData.message || 'Delete failed.';
+                    }
+                }
+
+            } catch(err) {
+                console.error(err);
+                badMessage.textContent = 'Server error. Please try again.';
+            }
+        });
+
+
     </script>
 
 </body>

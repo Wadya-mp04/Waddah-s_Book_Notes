@@ -38,6 +38,7 @@ const pass = process.env.PASSWORD;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.use(express.json());
 
 app.get(`/`, async (req,res) =>{
   // const result = await axios.get(`https://covers.openlibrary.org/b/isbn/9780811204811-M.jpg`);
@@ -47,8 +48,42 @@ app.get(`/`, async (req,res) =>{
     }
   );
 });
+
 app.post('/check',async (req,res) =>{
   console.log(req.body);
+  console.log(`correct cred: { user: ${process.env.USERNAME}, password: ${process.env.PASSWORD} }`)
+  const user = req.body.user;
+  const pass = req.body.password;
+  const action = req.body.action;
+  const ISBN = req.body.ISBN;
+
+  if(user.localeCompare(process.env.USERNAME) == 0 && pass.localeCompare(process.env.PASSWORD) == 0)
+  {
+    if(action.localeCompare('add') == 0){
+      res.json({
+      success: true,
+      redirect: '/admin'
+      });
+    }
+    else{
+      res.json({
+      success: true,
+      });
+    }
+  }
+  else
+  {
+    res.json({
+    success: false,
+    message: 'Invalid username or password'
+    });
+  }
+});
+
+app.post('/delete',async (req,res) =>{
+  //SQL stuff later
+
+  console.log(`deleteing ${ISBN}...`)
   res.redirect('/');
 });
 
@@ -56,6 +91,9 @@ app.post('/edit', async (req,res) =>{
   console.log(req.body);
 });
 
+app.get('/admin', (req,res) =>{
+  res.render('admin.ejs');
+})
 app.listen(port, ()=>{
     console.log(`Server running on port: ${port}`);
 });
