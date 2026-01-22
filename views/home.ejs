@@ -48,7 +48,7 @@
                         </div>
 
                         <div id="ratingEdit<%= book.ISBN %>" class="ratingEdit" hidden>
-                        <input type="text" value="<%= book.rating %>" name="newRating">
+                        <input type="text" value="<%= book.rating %>" name="updatedRating">
                         </div>
                     </div>
 
@@ -68,7 +68,7 @@
                             </svg>
                         </button>
                         <!-- </form> -->
-
+                        <p class="bad_message"></p>
                         <!-- right: edit / done / cancel live together -->
                         <div class="actions-right">
                         <!-- Edit button (shown by default) -->
@@ -80,17 +80,15 @@
                         </button>
 
                         <!-- Done + Cancel (hidden by default) -->
-                        <form action="/edit" method="post" class="edit-actions" onsubmit="event.stopPropagation()" hidden>
+                        <form action="/edit" method="post" class="edit-actions" hidden>
                             <input type="hidden" name="updatedItemISBN" value="<%= book.ISBN %>">
-                            <input id="updatedRating<%= book.ISBN %>" type="hidden" name="updatedRating" value="<%= book.rating %>">
-                            <input id="upadtedNote<%= book.ISBN %>" type="hidden" name="updatedNote" value="<%= book.note %>">
                             <button id="cancel<%= book.ISBN %>" class="cancel btn-e" type="button"
                                     onclick="cancelEdit('<%=book.ISBN%>', event)">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960" >
                                 <path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56Z"/>
                             </svg>
                             </button>
-                            <button id="done<%=book.ISBN%>" class="edit btn-e" type="submit" onclick="event.stopPropagation()">
+                            <button id="done<%=book.ISBN%>" class="edit btn-e" type="submit">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960" >
                                 <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
                             </svg>
@@ -204,11 +202,7 @@
             ratingEdit.hidden = false;
 
             // swap buttons
-            editBtn.hidden = true;
-            // for(const child of editBtn)
-            //     {
-            //         child.setAttribue('hidden',true);
-            //     }
+            editBtn.classList.add('hidden');
             actions.hidden = false;
         }
 
@@ -230,12 +224,8 @@
             ratingEdit.hidden = true;
 
             // swap buttons back
+            editBtn.classList.remove('hidden');
             actions.hidden = true;
-            editBtn.hidden = false;
-            // for(child of editBtn)                this thing is so annoying broooo
-            //     {
-            //         child.hidden = false;
-            //     }
         }
 
         document.querySelectorAll(".card").forEach(card => {
@@ -266,7 +256,7 @@
         const action = document.querySelector('#modalAction');
         const modalISBN = document.querySelector('#modalInISBN');
         const form = document.querySelector('.inCheckForm');
-        const badMessage = document.querySelector('.bad_message');
+        const badModalMessage = modal.querySelector('.bad_message');
         const goodMessage = document.querySelector('.good_message');
 
         deleteCard.addEventListener('click', (e) => {
@@ -302,7 +292,7 @@
             action.value = "add";
             modalISBN.value = "";
             message.textContent = "Please enter credentials to add a book rating.";
-            badMessage.textContent = "";
+            badModalMessage.textContent = "";
             goodMessage.textContent = "";
             modal.classList.add('show')
         })
@@ -311,14 +301,14 @@
             e.preventDefault();
 
             message.textContent = '';
-            badMessage.textContent = '';
+            badModalMessage.textContent = '';
             goodMessage.textContent = '';
 
             const user = document.getElementById('inCheckUser').value.trim();
             const pass = document.getElementById('inCheckPass').value.trim();
 
             if(!user || !pass) {
-                badMessage.textContent = 'Please fill in both username and password.';
+                badModalMessage.textContent = 'Please fill in both username and password.';
                 return;
             }
 
@@ -337,7 +327,7 @@
                 const data = await res.json();
 
                 if(!data.success) {
-                    badMessage.textContent = data.message || 'Invalid credentials.';
+                    badModalMessage.textContent = data.message || 'Invalid credentials.';
                     return;
                 }
 
@@ -362,17 +352,80 @@
                         goodMessage.textContent = deleteData.message;
                         document.getElementById('card' + modalISBN.value)?.remove();
                     } else {
-                        badMessage.textContent = deleteData.message || 'Delete failed.';
+                        badModalMessage.textContent = deleteData.message || 'Delete failed.';
                     }
                 }
 
             } catch(err) {
                 console.error(err);
-                badMessage.textContent = 'Server error. Please try again.';
+                badModalMessage.textContent = 'Server error. Please try again.';
             }
         });
 
+        const bookCards = document.querySelector('#book-cards');
+        
+        bookCards.addEventListener('submit', async (e) => {
+        const form = e.target.closest('form.edit-actions');
+        if (!form) return;                // ignore other forms
+        console.log("hello");
+        e.preventDefault();
+        e.stopPropagation();
 
+        // Find ISBN from hidden input in this form
+        const isbn = form.querySelector('input[name="updatedItemISBN"]').value;
+
+        // Read current edited values from the card
+        const card = form.closest('.card');
+        const newNote = card.querySelector(`#noteEdit${isbn}`).value.trim();
+        const ratingInput = card.querySelector(`#ratingEdit${isbn} input`);
+        const newRating = ratingInput ? ratingInput.value.trim() : '';
+        const badEditMessage = card.querySelector('.bad_message');
+        badEditMessage.textContent = '';
+
+        // Basic validation (optional)
+        if (!newNote || !newRating) {
+            badEditMessage.textContent = 'Note & Ratingcannot be empty';
+            return;
+        }
+        let numRating = Number(newRating);
+        if (numRating < 1 || numRating > 10 || Number.isNaN(numRating)) {
+            badEditMessage.textContent = 'Rating must be in between 1 & 10 (inclusive)';
+            return;
+        }
+        try {
+            const res = await fetch('/edit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ISBN: isbn,
+                updatedNote: newNote,
+                updatedRating: newRating
+            })
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+            badEditMessage.textContent = data.message || 'Edit failed';
+            return;
+            }
+
+            // Update frontend text immediately
+            card.querySelector(`#note${isbn}`).textContent = newNote;
+
+            // If you want: update stars display here (rebuild rating)
+            // (keep it simple at first—just update note)
+
+            // Exit edit mode using your existing cancelEdit logic
+            cancelEdit(isbn, e);
+            const stars = card.querySelector(`#rating${isbn}`);
+            stars.innerHTML = '';
+            for (let i = 0 ; i<numRating; i++){
+                stars.innerHTML+= '<svg class="ratingStar" xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960"><path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/></svg>'
+            }
+        } catch (err) {
+            console.error(err);
+        }
+        });
     </script>
 
 </body>

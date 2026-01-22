@@ -89,6 +89,16 @@ app.post('/delete',async (req,res) =>{
 
 app.post('/edit', async (req,res) =>{
   console.log(req.body);
+  const ISBN = req.body.ISBN;
+  const note = req.body.updatedNote;
+  const rating = req.body.updatedRating;
+  console.log(`new values are: {ISBN : ${ISBN} , Note : ${note} , Rating : ${rating}}`)
+
+  //sql stuff later
+
+  res.json({
+    success : true,
+  });
 });
 
 app.get('/admin', (req,res) =>{

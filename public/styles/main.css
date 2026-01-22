@@ -303,7 +303,7 @@ a{
   margin-bottom: 1.5rem;
 }
 .bad_message{
-  color: #800020;
+  color: red;
 }
 .good_message{
   color: #56694a;
@@ -350,4 +350,8 @@ a{
 .inCheckForm input[type="password"]:focus{
   outline: 2px solid var(--text-color);
   outline-offset: 2px;
+}
+
+.hidden {
+  display: none !important;
 }
