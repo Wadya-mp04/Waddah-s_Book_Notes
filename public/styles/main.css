@@ -45,6 +45,8 @@ a{
     justify-content: space-between;
     padding: 10px 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
+    border-bottom: 2px solid var(--text-color);
+    border-radius: 8px;
 }
 
 .header-title {
@@ -73,6 +75,11 @@ a{
     transition: transform 0.3s ease;
     cursor: pointer;
 }
+
+button svg {
+  fill: currentColor;
+}
+
 .btn-d,.btn-e {
     padding: 0;
     color: var(--text-color);
@@ -138,6 +145,156 @@ a{
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+/* Page wrapper (so it sits nicely under the sticky header) */
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  padding-top: calc(2rem + 60px);
+}
+
+.creation_card {
+  border: 2px solid var(--text-color);
+  border-radius: 12px;
+  background-color: var(--base-color);
+  color: var(--text-color);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  padding: 2rem;
+}
+
+/* Main layout: form + cover card */
+.creation_grid {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 800px) {
+  .creation_grid {
+    grid-template-columns: 1fr;
+  }
+  .cover_card {
+    order: -1; /* show cover preview on top */
+  }
+}
+
+.creation_form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.1rem;
+}
+
+.creation_form label {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.creation_form input,
+.creation_form textarea {
+  border: 1px solid var(--text-color);
+  border-radius: 8px;
+  background-color: var(--base-color);
+  color: var(--text-color);
+  padding: 0.8rem 0.9rem;
+  font-family: inherit;
+}
+
+.creation_form input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.creation_form textarea {
+  resize: vertical;
+  min-height: 180px;
+  line-height: 1.5;
+}
+
+.creation_form input:focus,
+.creation_form textarea:focus {
+  outline: 2px solid var(--text-color);
+  outline-offset: 2px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 1rem;
+}
+
+@media (max-width: 500px) {
+  .row { grid-template-columns: 1fr; }
+}
+
+.hint {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  min-height: 1.2em; /* prevents layout jump */
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+/* Cover preview mini-card */
+.cover_card {
+  border: 2px solid var(--text-color);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background-color: var(--secondary-color);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+}
+
+.cover_img_wrap {
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: rgba(0,0,0,0.15);
+  aspect-ratio: 3 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cover_img_wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none; /* hidden until we have a cover */
+}
+
+.cover_caption {
+  margin: 0.6rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+  text-align: center;
+  color: #F3EAC7;
+}
+
+.page_hint {
+  max-width: 900px;
+  margin: 0.75rem auto 0;
+  text-align: center;
+  opacity: 0.85;
+}
+
+/* remove spin buttons from number type numbers */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Important for some older versions of Chrome */
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
 }
 
 .card-top {
