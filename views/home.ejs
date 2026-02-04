@@ -30,16 +30,16 @@
             <p id="message1">jokes just no books are uploaded</p>
         <% } else {  %>
             <% bookList.forEach(book => { %>
-                <div class="card" id="card<%= book.ISBN %>" onclick="clickSound()">
+                <div class="card" id="card<%= book.isbn %>" onclick="clickSound()">
                     <!-- Top row -->
                     <div class="card-top">
                         <div class="title-author">
-                        <h2 id="title<%= book.ISBN %>" class="title"><%= book.title %></h2>
-                        <p id="author<%= book.ISBN %>"><%= book.Author %></p>
-                        <p id="ISBN<%= book.ISBN %>">ISBN : <%= book.ISBN %></p>
+                        <h2 id="title<%= book.isbn %>" class="title"><%= book.title %></h2>
+                        <p id="author<%= book.isbn %>"><%= book.Author %></p>
+                        <p id="ISBN<%= book.isbn %>">ISBN : <%= book.isbn %></p>
                         </div>
 
-                        <div class="rating" id="rating<%= book.ISBN %>">
+                        <div class="rating" id="rating<%= book.isbn %>">
                         <% for (let i = 0; i < book.rating; i++){ %>
                             <svg class="ratingStar" xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960">
                             <path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/>
@@ -47,21 +47,21 @@
                         <% } %>
                         </div>
 
-                        <div id="ratingEdit<%= book.ISBN %>" class="ratingEdit" hidden>
+                        <div id="ratingEdit<%= book.isbn %>" class="ratingEdit" hidden>
                         <input type="text" value="<%= book.rating %>" name="updatedRating">
                         </div>
                     </div>
 
                     <!-- Middle -->
-                    <p id="note<%= book.ISBN %>" class="note"><%= book.note %></p>
+                    <p id="note<%= book.isbn %>" class="note"><%= book.note %></p>
                     <!-- keep ONE textarea only -->
-                    <textarea id="noteEdit<%= book.ISBN %>" class="noteEdit" name="updatedNote" hidden><%= book.note %></textarea>
+                    <textarea id="noteEdit<%= book.isbn %>" class="noteEdit" name="updatedNote" hidden><%= book.note %></textarea>
 
                     <!-- Bottom row -->
                     <div class="card-bottom">
                         <!-- left: delete -->
                         <!-- <form action="/delete" onsubmit="event.stopPropagation()">
-                        <input type="hidden" name="deleteISBN" value="<%= book.ISBN %>"> -->
+                        <input type="hidden" name="deleteISBN" value="<%= book.isbn %>"> -->
                         <button class="btn-d">
                             <svg class="shake svg-d" xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960">
                             <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Z"/>
@@ -72,8 +72,8 @@
                         <!-- right: edit / done / cancel live together -->
                         <div class="actions-right">
                         <!-- Edit button (shown by default) -->
-                        <button class="btn-e shake edit-toggle" id="edit<%=book.ISBN%>"
-                                onclick="startEdit('<%=book.ISBN%>', event)">
+                        <button class="btn-e shake edit-toggle" id="edit<%=book.isbn%>"
+                                onclick="startEdit('<%=book.isbn%>', event)">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960">
                             <path d="M200-200h57l391-391-57-57-391 391v57Z"/>
                             </svg>
@@ -81,14 +81,14 @@
 
                         <!-- Done + Cancel (hidden by default) -->
                         <form action="/edit" method="post" class="edit-actions" hidden>
-                            <input type="hidden" name="updatedItemISBN" value="<%= book.ISBN %>">
-                            <button id="cancel<%= book.ISBN %>" class="cancel btn-e" type="button"
-                                    onclick="cancelEdit('<%=book.ISBN%>', event)">
+                            <input type="hidden" name="updatedItemISBN" value="<%= book.isbn %>">
+                            <button id="cancel<%= book.isbn %>" class="cancel btn-e" type="button"
+                                    onclick="cancelEdit('<%=book.isbn%>', event)">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960" >
                                 <path d="m336-280 144-144 144 144 56-56-144-144 144-144-56-56-144 144-144-144-56 56 144 144-144 144 56 56Z"/>
                             </svg>
                             </button>
-                            <button id="done<%=book.ISBN%>" class="edit btn-e" type="submit">
+                            <button id="done<%=book.isbn%>" class="edit btn-e" type="submit">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 -960 960 960" >
                                 <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
                             </svg>
@@ -224,6 +224,7 @@
             // Optional: get the card / ISBN
             const card = deleteBtn.closest('.card');
             if (card) {
+                console.log('im here in the if(card) loop..')
                 console.log('Card ID:', card.id);
                 modal.classList.add('show');
                 message.innerHTML = "please fill in credentials to delete the rating for book ISBN: " + card.id.substring(4);
@@ -299,6 +300,8 @@
                     if(deleteData.success) {
                         goodMessage.textContent = deleteData.message;
                         document.getElementById('card' + modalISBN.value)?.remove();
+                        setTimeout(modal.classList.remove('show'),500) 
+                        
                     } else {
                         badModalMessage.textContent = deleteData.message || 'Delete failed.';
                     }
@@ -332,7 +335,7 @@
 
         // Basic validation (optional)
         if (!newNote || !newRating) {
-            badEditMessage.textContent = 'Note & Ratingcannot be empty';
+            badEditMessage.textContent = 'Note & Rating cannot be empty';
             return;
         }
         let numRating = Number(newRating);

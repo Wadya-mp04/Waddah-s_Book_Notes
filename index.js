@@ -15,21 +15,19 @@ const db = new pg.Pool({
   password: process.env.DB_PASS,
   port: 5432,
 });
-const bookList = [
-  {
-    title: `No Longer Human`,
-    Author: `Osamu Dazai`,
-    ISBN: `1`,
-    note:`No Longer Human by Osamu Dazai is the second best-selling novel in Japan of all time. I read he killed himself shortly after publishing the book which is essentially an autobiography, but with fictional characters. The author had also inspired horror manga artist Junji Ito. Of course, curiosity got the best of me; I had to read this book. It fucked me up, friends. It is a really short read that took me just a few days, and let me tell you, it’s a page turner. The protagonist is a very troubled individual, but the raw look into his psyche helped me sympathize and oftentimes relate to his behavior. After finishing it, I feel a little empty. I can’t stop thinking about it. I recommend reading this if you want a book that really analyzes the complexities of the human mind, but I would avoid it if you are struggling with deep depression. Additionally, there are themes of sexual assault, suicide, and child abuse, as well as quite a lot of misogynistic statements throughout the book.`,
-    rating: 10
-  },
-  {
-    title:`Diary of a Whimpy Kid`,
-    Author:`Jeff Kinney`,
-    ISBN:`2`,
-    note:`goated booky wooky!`,
-    rating: 7
-  }
+db.connect();
+
+async function bookListCheck(){
+  const result = await db.query("select * from notes");
+  // console.log(result.rows);
+  bookList = [];
+  result.rows.forEach((note) => {
+    bookList.push(note);
+  }) 
+}
+
+let bookList = [
+  
 ];
 const message =``;
 const user = process.env.USERNAME;
@@ -42,6 +40,7 @@ app.use(express.json());
 
 app.get(`/`, async (req,res) =>{
   // const result = await axios.get(`https://covers.openlibrary.org/b/isbn/9780811204811-M.jpg`);
+  await bookListCheck()
     res.render('home.ejs',
     {
       bookList : bookList,
@@ -81,20 +80,51 @@ app.post('/check',async (req,res) =>{
 });
 
 app.post('/delete',async (req,res) =>{
-  //SQL stuff later
+  const ISBN = req.body.ISBN;
 
+  try {
+    await db.query("DELETE FROM notes WHERE ISBN = $1",[ISBN])
+  } catch (error) {
+    
+  }
   console.log(`deleteing ${ISBN}...`)
-  res.redirect('/');
+  res.json({
+    success: true,
+    message: `Rating for ISBN ${ISBN} deleted successfully.`
+  });
+  // res.redirect('/');
 });
 
 app.post('/edit', async (req,res) =>{
   console.log(req.body);
   const ISBN = req.body.ISBN;
   const note = req.body.updatedNote;
-  const rating = req.body.updatedRating;
-  console.log(`new values are: {ISBN : ${ISBN} , Note : ${note} , Rating : ${rating}}`)
+  const updatedRating = req.body.updatedRating;
+  const rating = Number(req.body.updatedRating);
+  console.log(`new values are: {ISBN : ${ISBN} , Note : ${note} , Rating : ${rating}}`);
 
-  //sql stuff later
+  if (!Number.isInteger(rating) || rating < 1 || rating > 10) {
+    return res.json({
+      success: false,
+      message: 'Rating must be an integer between 1 and 10'
+    });
+}
+  try {
+    const result = await db.query("UPDATE notes SET note = $1, rating = $2 WHERE isbn = $3",[note,rating,ISBN]);
+
+    if (result.rowCount === 0) {
+      return res.json({
+        success: false,
+        message: `No record found for ISBN ${ISBN}`
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success:false,
+      message:`Database error: ${error}` 
+    })
+  }
 
   res.json({
     success : true,
