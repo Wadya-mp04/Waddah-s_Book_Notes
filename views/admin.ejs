@@ -63,7 +63,7 @@
         <!-- RIGHT: cover preview mini-card -->
         <aside class="cover_card" aria-label="Book cover preview">
             <div class="cover_img_wrap">
-            <img id="coverImg" alt="Book cover preview" />
+            <img id="coverImg" src="" alt="Book cover preview" />
             </div>
             <p id="coverCaption" class="cover_caption">Cover preview</p>
         </aside>
@@ -77,3 +77,84 @@
     <%- include('partials/footer.ejs'); -%>
 </body>
 </html>
+
+<script>
+    const isbnIn = document.querySelector("#isbn");
+    const isbnMessage = document.querySelector("#isbnStatus");
+    const title = document.querySelector("#bookTitle");
+    const coverImg = document.querySelector("#coverImg");
+    coverImg.onload = () => {
+    coverImg.style.display = "block";
+    };
+
+    coverImg.onerror = () => {
+    coverImg.style.display = "none";
+    isbnMessage.textContent = "No cover found.";
+    };
+    let lastISBNIn = "";
+    const updateDebounceReq = debounce( async (isbn)=>{
+        try {
+            const res = await fetch ('/isbnCheck',{
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    isbn : isbn
+                })
+            })
+            const data = await res.json();
+            if (!data.success){
+                isbnMessage.textContent = data.message;
+                return;
+            }
+            if (isbn === normalizeISBN(isbnIn.value)){
+                isbnMessage.textContent = "loading complete!"
+            }
+            title.value = data.title;
+            coverImg.src = data.coverURL;
+        } catch (error) {
+            console.log(error);
+            isbnMessage.textContent = "try again later."
+        }
+    })
+    isbnIn.addEventListener("input", (e) =>{
+        isbnMessage.textContent = "";
+        const clean = normalizeISBN(e.target.value);
+        let len = clean.length;
+        if ((len === 10 || len === 13)) {
+            if(clean !== lastISBNIn){
+                lastISBNIn = clean;
+                isbnMessage.textContent = "loading...";
+                updateDebounceReq(clean);
+            }
+            else{
+                isbnMessage.textContent = "same isbn... no new requests"
+            }
+        }
+        else{
+            if(len>0 && len<13){
+                isbnMessage.textContent = "keep typing..."
+            }
+            if(len>13){
+                isbnMessage.textContent = "too long!!!"
+            }
+        }
+    })
+    function debounce(cb, delay=1000){
+        let timeout;
+
+        return(...args) =>{
+            clearTimeout(timeout);
+            timeout = setTimeout( () => {
+                cb(...args)
+            },
+            delay)
+        }
+    }
+    function normalizeISBN(input) {
+        if (!input) return "";
+
+        return input
+            .toUpperCase()        // allow lowercase x → X
+            .replace(/[^0-9X]/g, ""); // remove spaces, hyphens, etc.
+    }
+</script>

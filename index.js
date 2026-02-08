@@ -7,7 +7,8 @@ dotenv.config();
 
 const app = express();
 const port = 3000;
-const API = `https://covers.openlibrary.org/b/isbn/`;
+const coverAPI = `https://covers.openlibrary.org/b/isbn/`;
+const isbnAPI = "https://openlibrary.org/isbn/";
 const db = new pg.Pool({
   user: "postgres",
   host: "localhost",
@@ -134,6 +135,93 @@ app.post('/edit', async (req,res) =>{
 app.get('/admin', (req,res) =>{
   res.render('admin.ejs');
 })
+app.post("/isbnCheck", async (req, res) => {
+  const isbn = req.body.isbn;
+  let title;
+  if (!isbn) {
+    return res.json({ success: false, message: "ISBN is required" });
+  }
+
+  if (!isValidISBN(isbn)) {
+    return res.json({ success: false, message: "Invalid ISBN format" });
+  }
+
+  console.log(`Valid ISBN received: ${isbn}`);
+
+  if (false){
+
+  }else{
+    try {
+      const url = `https://openlibrary.org/isbn/${isbn}.json`;
+      const response = await axios.get(url);
+
+      const result = response.data; // <-- it's an object
+      // console.log(result);
+      title = result.title;
+      return res.json({
+        success: true,
+        title: title ?? "Unknown title",
+        coverURL: coverAPI + isbn + "-M.jpg"
+      });
+    } catch (error) {
+      // Handle "not found" cleanly
+      if (error.response && error.response.status === 404) {
+        return res.json({
+          success: false,
+          message: "No book found for that ISBN (Open Library 404).",
+        });
+      }
+
+      console.log(error);
+      return res.json({
+        success: false,
+        message: "Open Library request failed. Try again later.",
+      });
+    }
+  }
+});
+
 app.listen(port, ()=>{
     console.log(`Server running on port: ${port}`);
 });
+
+
+
+
+// #############################################
+
+// Functions 
+
+// #############################################
+
+
+function isValidISBN10(isbn) {
+  if (!/^\d{9}[\dX]$/.test(isbn)) return false;
+
+  let sum = 0;
+  for (let i = 0; i < 10; i++) {
+    const char = isbn[i];
+    const value = char === 'X' ? 10 : Number(char);
+    sum += value * (10 - i);
+  }
+  return sum % 11 === 0;
+}
+
+function isValidISBN13(isbn) {
+  if (!/^\d{13}$/.test(isbn)) return false;
+
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    const digit = Number(isbn[i]);
+    sum += digit * (i % 2 === 0 ? 1 : 3);
+  }
+
+  const checkDigit = (10 - (sum % 10)) % 10;
+  return checkDigit === Number(isbn[12]);
+}
+
+function isValidISBN(isbn) {
+  if (isbn.length === 10) return isValidISBN10(isbn);
+  if (isbn.length === 13) return isValidISBN13(isbn);
+  return false;
+}
