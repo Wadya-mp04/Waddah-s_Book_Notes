@@ -47,6 +47,7 @@ a{
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
     border-bottom: 2px solid var(--text-color);
     border-radius: 8px;
+    background-color: var(--base-color);
 }
 
 .header-title {
@@ -511,4 +512,53 @@ input[type=number] {
 
 .hidden {
   display: none !important;
+}
+
+html {
+    overflow: scroll;
+    overflow-x: hidden;
+}
+::-webkit-scrollbar {
+    width: 0;  /* Remove scrollbar space */
+    background: transparent;  /* Optional: just make scrollbar invisible */
+}
+/* Optional: show position indicator in red */
+::-webkit-scrollbar-thumb {
+    background: #FF0000;
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  padding: 0.9rem 1.4rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  font-size: 0.95rem;
+  opacity: 0;
+  animation: toast-in 0.4s ease forwards, toast-out 0.4s ease forwards 3s;
+  z-index: 9999;
+}
+
+/* Fade in */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Fade out */
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
 }

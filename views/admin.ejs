@@ -29,10 +29,11 @@
         <div class="creation_grid">
 
         <!-- LEFT: form -->
-        <form class="creation_form" autocomplete="off">
+        <form class="creation_form" autocomplete="off" method="post" action="/add">
             <div class="field">
             <label for="bookTitle">Title</label>
             <input id="bookTitle" name="title" type="text" placeholder="Auto-filled from ISBN" disabled>
+            <input id="bookTitleHidden" name="title" type="hidden">
             <small class="hint">Title is fetched from ISBN.</small>
             </div>
 
@@ -45,13 +46,15 @@
 
             <div class="field">
                 <label for="rating">Rating (1–10)</label>
-                <input id="rating" name="rating" type="number" min="1" max="10" placeholder="Insert rating">
+                <input id="rating" name="rating" type="number" placeholder="Insert rating">
+                <small id="ratingStatus" class="hint"></small>
             </div>
             </div>
 
             <div class="field">
             <label for="note">Note</label>
             <textarea id="note" name="note" rows="10" placeholder="Write your notes..."></textarea>
+            <small id="noteStatus" class="hint"></small>
             </div>
 
             <div class="actions">
@@ -75,23 +78,72 @@
     </div>
 
     <%- include('partials/footer.ejs'); -%>
+    <% if (message) { %>
+        <div id="toast" class="toast">
+            <%= message %>
+        </div>
+    <% } %>
 </body>
 </html>
 
 <script>
     const isbnIn = document.querySelector("#isbn");
     const isbnMessage = document.querySelector("#isbnStatus");
+    const ratingMessage = document.querySelector('#ratingStatus');
+    const noteMessage = document.querySelector('#noteStatus');
+    const ratingInput = document.querySelector('#rating');
+    const noteInput = document.querySelector('#note');
     const title = document.querySelector("#bookTitle");
     const coverImg = document.querySelector("#coverImg");
+    const form = document.querySelector('.creation_form');
     coverImg.onload = () => {
     coverImg.style.display = "block";
     };
-
     coverImg.onerror = () => {
     coverImg.style.display = "none";
     isbnMessage.textContent = "No cover found.";
     };
     let lastISBNIn = "";
+
+    form.addEventListener('submit',(e) =>{
+        e.preventDefault();
+        isbnMessage.textContent = "";
+        ratingMessage.textContent = "";
+        noteMessage.textContent = "";
+        let error = false;
+
+        const cleanISBN = normalizeISBN(isbnIn.value);
+        const ratingVal = Number(ratingInput.value);
+        const noteVal = noteInput.value.trim();
+
+        if (!(cleanISBN.length === 10 || cleanISBN.length === 13)) {
+            isbnMessage.textContent = "ISBN must be 10 or 13 digits.";
+            isbnIn.focus();
+            error = true;
+        }
+
+        // Rating
+        if (!Number.isInteger(ratingVal) || ratingVal < 1 || ratingVal > 10) {
+            ratingMessage.textContent = "Rating must be an integer between 1 and 10.";
+            ratingInput.focus();
+            error = true;
+        }
+
+        // Note
+        if (!noteVal) {
+            noteMessage.textContent = "Please write a note.";
+            noteInput.focus();
+            error = true;
+        }
+
+        if(error){
+            return;
+        }
+
+        isbnIn.value = cleanISBN; // normalize before sending
+        form.submit();
+    });
+
     const updateDebounceReq = debounce( async (isbn)=>{
         try {
             const res = await fetch ('/isbnCheck',{
@@ -110,6 +162,7 @@
                 isbnMessage.textContent = "loading complete!"
             }
             title.value = data.title;
+            document.querySelector('#bookTitleHidden').value = data.title; 
             coverImg.src = data.coverURL;
         } catch (error) {
             console.log(error);

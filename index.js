@@ -46,7 +46,6 @@ app.use(express.static("public"));
 app.use(express.json());
 
 app.get(`/`, async (req,res) =>{
-  // const result = await axios.get(`https://covers.openlibrary.org/b/isbn/9780811204811-M.jpg`);
   await bookListCheck()
     res.render('home.ejs',
     {
@@ -90,12 +89,16 @@ app.post('/delete',async (req,res) =>{
   const ISBN = req.body.ISBN;
 
   try {
-    await db.query("DELETE FROM notes WHERE ISBN = $1",[ISBN])
+    await db.query("DELETE FROM notes WHERE isbn = $1",[ISBN])
   } catch (error) {
-    
+    return res.json({
+    success: false,
+    message: `database error... please try again later.`
+  });
   }
+  
   console.log(`deleteing ${ISBN}...`)
-  res.json({
+  return res.json({
     success: true,
     message: `Rating for ISBN ${ISBN} deleted successfully.`
   });
@@ -127,19 +130,19 @@ app.post('/edit', async (req,res) =>{
     }
   } catch (error) {
     console.log(error);
-    res.json({
+    return res.json({
       success:false,
       message:`Database error: ${error}` 
     })
   }
 
-  res.json({
+  return res.json({
     success : true,
   });
 });
 
 app.get('/admin', (req,res) =>{
-  res.render('admin.ejs');
+  res.render('admin.ejs', { message: req.query.message || "" });
 })
 app.post("/isbnCheck", async (req, res) => {
   const isbn = req.body.isbn;
@@ -176,19 +179,34 @@ app.post("/isbnCheck", async (req, res) => {
     return res.json(data);
   } catch (error) {
     // Handle "not found" cleanly
-    if (error.response && error.response.status === 404) {
-      return res.json({
-        success: false,
-        message: "No book found for that ISBN (Open Library 404).",
-      });
-    }
+      const data =
+      error.response?.status === 404
+        ? { success: false, message: "No book found for that ISBN." }
+        : { success: false, message: "Open Library request failed." };
 
-    console.log(error);
-    return res.json({
-      success: false,
-      message: "Open Library request failed. Try again later.",
-    });
+      // up to you: cache failures too or not
+      lruSet(isbn, data);
+
+      return res.json(data);
   }
+});
+
+app.post('/add', async (req,res) =>{
+  console.log(req.body);
+  const isbn = req.body.isbn;
+  const rating = Number(req.body.rating);
+  const note = req.body.note;
+  const title = req.body.title;
+
+  try {
+    await db.query("INSERT INTO notes (isbn,note,rating,title) VALUES ($1,$2,$3,$4)",[isbn,note,rating,title])
+    console.log(`${isbn} added successfully!`);
+    return res.redirect('/admin?message=' + encodeURIComponent(`${isbn} added successfully!`));
+  } catch (error) {
+    console.log(error);
+    return res.redirect('/admin?message=' + encodeURIComponent("Database error... try again later."));
+  }
+
 });
 
 app.listen(port, ()=>{
