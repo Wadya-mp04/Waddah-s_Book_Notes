@@ -9,6 +9,9 @@ const app = express();
 const port = 3000;
 const coverAPI = `https://covers.openlibrary.org/b/isbn/`;
 const isbnAPI = "https://openlibrary.org/isbn/";
+const MAX_CACHE = 3;              // <- set N here
+const isbnCache = new Map();       // key: isbn, value: { success, title, coverURL, ... }
+
 const db = new pg.Pool({
   user: "postgres",
   host: "localhost",
@@ -17,6 +20,9 @@ const db = new pg.Pool({
   port: 5432,
 });
 db.connect();
+
+
+
 
 async function bookListCheck(){
   const result = await db.query("select * from notes");
@@ -148,36 +154,40 @@ app.post("/isbnCheck", async (req, res) => {
 
   console.log(`Valid ISBN received: ${isbn}`);
 
-  if (false){
+  const cached = lruGet(isbn);
+  if (cached){
+    console.log(cached);
+    return res.json({ ...cached, cached: true });
+  }
 
-  }else{
-    try {
-      const url = `https://openlibrary.org/isbn/${isbn}.json`;
-      const response = await axios.get(url);
+  try {
+    const url = `https://openlibrary.org/isbn/${isbn}.json`;
+    const response = await axios.get(url);
 
-      const result = response.data; // <-- it's an object
-      // console.log(result);
-      title = result.title;
-      return res.json({
-        success: true,
-        title: title ?? "Unknown title",
-        coverURL: coverAPI + isbn + "-M.jpg"
-      });
-    } catch (error) {
-      // Handle "not found" cleanly
-      if (error.response && error.response.status === 404) {
-        return res.json({
-          success: false,
-          message: "No book found for that ISBN (Open Library 404).",
-        });
-      }
-
-      console.log(error);
+    const result = response.data; 
+    // console.log(result);
+    title = result.title;
+    const data = {
+      success: true,
+      title: title ?? "Unknown title",
+      coverURL: coverAPI + isbn + "-L.jpg"
+    };
+    lruSet(isbn, data);
+    return res.json(data);
+  } catch (error) {
+    // Handle "not found" cleanly
+    if (error.response && error.response.status === 404) {
       return res.json({
         success: false,
-        message: "Open Library request failed. Try again later.",
+        message: "No book found for that ISBN (Open Library 404).",
       });
     }
+
+    console.log(error);
+    return res.json({
+      success: false,
+      message: "Open Library request failed. Try again later.",
+    });
   }
 });
 
@@ -224,4 +234,24 @@ function isValidISBN(isbn) {
   if (isbn.length === 10) return isValidISBN10(isbn);
   if (isbn.length === 13) return isValidISBN13(isbn);
   return false;
+}
+
+function lruGet(key) {
+  if (!isbnCache.has(key)) return null;
+  const val = isbnCache.get(key);
+  // mark as recently used: move to end
+  isbnCache.delete(key);
+  isbnCache.set(key, val);
+  return val;
+}
+
+function lruSet(key, val) {
+  if (isbnCache.has(key)) isbnCache.delete(key); // overwrite + move to end
+  isbnCache.set(key, val);
+
+  // evict least-recently-used (first item in Map)
+  if (isbnCache.size > MAX_CACHE) {
+    const oldestKey = isbnCache.keys().next().value;
+    isbnCache.delete(oldestKey);
+  }
 }
